@@ -1,4 +1,4 @@
-from inverted_index import InvertedIndex
+from src.inverted_index import InvertedIndex
 import unittest
 
 
@@ -11,4 +11,4 @@ class ClassifierTest(unittest.TestCase):
         super().tearDown()
 
     def test_inverted_index(self):
-        InvertedIndex.create_inverted_index(self, 2, True, True)
+        InvertedIndex.create_inverted_index(20, True, True)

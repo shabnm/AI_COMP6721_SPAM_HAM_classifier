@@ -7,11 +7,13 @@ Folder src contains:
 
   classifier.py : will be the main class for the project execution, is in progress
   
-  conditional_probability.py : takes the Ordered dictionary along with all the values and calculate the probability and send data to writer       to write to external file
+  conditional_probability.py : takes the Ordered dictionary along with all the values and calculate the probability and send data to writer
+  to write to external file
   
   file_path.py : contains constant file locations
   
-  inverted_index.py : used to create the ordered dixtionary of the terms occured in the ham/spam files, and used to calculate the term            frequency and also the vocabulary size of each file types.
+  inverted_index.py : used to create the ordered dixtionary of the terms occured in the ham/spam files, and used to calculate the term
+  frequency and also the vocabulary size of each file types.
         Right now, we are calculating vocab size as the count of new words in each file type.
        
   smooth.py : will be used to add details about smoothning, is in progress
