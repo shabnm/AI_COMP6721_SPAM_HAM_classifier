@@ -1,7 +1,7 @@
 import re
 import collections
-from conditional_probability import ConditionalProbability
-from file_path import File_Path
+from src.conditional_probability import ConditionalProbability
+from src.file_path import File_Path
 
 
 class InvertedIndex:

@@ -1,4 +1,4 @@
-from writer import WriteToExternal
+from src.writer import WriteToExternal
 
 
 class ConditionalProbability:
