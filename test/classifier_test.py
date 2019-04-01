@@ -11,5 +11,4 @@ class ClassifierTest(unittest.TestCase):
         super().tearDown()
 
     def test_inverted_index(self):
-        # InvertedIndex.create_inverted_index(self, 500, "ham", True, False)
-        InvertedIndex.create_inverted_index(self, 500, "spam", True, False)
+        InvertedIndex.create_inverted_index(self, 2, True, True)
