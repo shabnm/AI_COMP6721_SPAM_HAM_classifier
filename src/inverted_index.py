@@ -56,8 +56,7 @@ class InvertedIndex:
             sort_inverted_index = sorted(inverted_index)
             for term in sort_inverted_index:
                 sorted_inverted_index[term] = inverted_index[term]
-        print(sorted_inverted_index, ham_vocab, ham_word_count, spam_vocab,
-                                                      spam_word_count)
+
         ConditionalProbability.calc_probability(self, sorted_inverted_index, ham_vocab,
                                                       ham_word_count, spam_vocab,
                                                       spam_word_count, smoothning_flag)
