@@ -3,6 +3,8 @@ from src.data_provider import DataProvider
 from src.inverted_index import InvertedIndex
 import unittest
 
+from src.model_dumper import ModelDumper
+
 
 class ClassifierTest(unittest.TestCase):
 
@@ -14,6 +16,5 @@ class ClassifierTest(unittest.TestCase):
 
     def test_inverted_index(self):
         inverted_index = InvertedIndex.create_inverted_index(DataProvider())
-        model = ConditionalProbability.calc_probability(inverted_index, True)
-        with open('../model.txt', "w") as f:
-            print("\n".join(['  '.join(row) for row in model]), file=f)
+        k_prob = ConditionalProbability.calc_probability(inverted_index, True)
+        ModelDumper.dump(inverted_index, k_prob)

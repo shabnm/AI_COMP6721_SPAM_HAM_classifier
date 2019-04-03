@@ -8,8 +8,10 @@ class DataProvider:
         self.labels = labels
 
     def get_files(self, source='train'):
-        train_files = os.listdir("../data/{}/".format(source))
+        data_dir = os.path.dirname(os.path.abspath(__file__)) + "/../data/"
+
+        train_files = os.listdir(data_dir + "{}/".format(source))
         files = {}
         for k in self.labels:
-            files[k] = ['../data/{}/{}'.format(source, f) for f in train_files if '-{}-'.format(k) in f]
+            files[k] = [data_dir + '{}/{}'.format(source, f) for f in train_files if '-{}-'.format(k) in f]
         return files

@@ -1,25 +1,24 @@
 class ConditionalProbability:
 
     @staticmethod
-    def calc_probability(sorted_inverted_index, smoothing_flag):
+    def calc_probability(inverted_index, smoothing_flag):
+        labels = list(inverted_index.keys())
+        vocabulary = inverted_index[labels[0]].keys()
+
         k_vocab = {}
         k_count = {}
-        for k in sorted_inverted_index.keys():
-            k_vocab[k] = len(sorted_inverted_index[k])
-            k_count[k] = sum(sorted_inverted_index[k].values())
+        k_prob = {}
+        for k in labels:
+            k_vocab[k] = len(inverted_index[k])
+            k_count[k] = sum(inverted_index[k].values())
+            k_prob[k] = {w: 0 for w in vocabulary}
 
         delta = 0.5 if smoothing_flag else 0
 
-        line_num = 0
-        outputs = []
-        for word in sorted_inverted_index[list(sorted_inverted_index.keys())[0]].keys():
-            line_num += 1
-            output = [str(line_num), word]
-            for k in sorted_inverted_index.keys():
-                num = sorted_inverted_index[k][word] + delta
+        for word in vocabulary:
+            for k in labels:
+                num = inverted_index[k][word] + delta
                 den = k_count[k] + (delta * k_vocab[k])
-                prob = num / den
-                output.append(str(sorted_inverted_index[k][word]))
-                output.append(str(prob))
-            outputs.append(output)
-        return outputs
+                k_prob[k][word] = num / den
+
+        return k_prob
