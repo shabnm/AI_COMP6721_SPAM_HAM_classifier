@@ -9,15 +9,7 @@ class InvertedIndex:
 
     @staticmethod
     def create_inverted_index(number, stop_word_flag, smoothning_flag):
-        ham_vocab = 0
-        spam_vocab = 0
-        ham_word_count = 0
-        spam_word_count = 0
         inverted_index = {
-            'ham': collections.defaultdict(list),
-            'spam': collections.defaultdict(list),
-        }
-        sorted_inverted_index = {
             'ham': collections.OrderedDict(),
             'spam': collections.OrderedDict(),
         }
@@ -44,21 +36,10 @@ class InvertedIndex:
                     traceback.print_exc()
                     print(f)
 
-            print(inverted_index)
+        sorted_inverted_index = {
+            'ham': collections.OrderedDict(sorted(inverted_index['ham'].items())),
+            'spam': collections.OrderedDict(sorted(inverted_index['spam'].items())),
+        }
 
-            if msg_type is "ham":
-                ham_vocab = vocab_size
-                ham_word_count = total_word_count
-            else:
-                spam_vocab = vocab_size
-                spam_word_count = total_word_count
 
-            sorted_inverted_index['ham'] = sorted(inverted_index['ham'])
-            sorted_inverted_index['spam'] = sorted(inverted_index['spam'])
-
-            # for term in sorted_inverted_index:
-            #     sorted_inverted_index[term] = inverted_index[term]
-
-        ConditionalProbability.calc_probability(sorted_inverted_index,
-                                                len(sorted_inverted_index['ham']), sum(sorted_inverted_index['ham'].values()),
-                                                len(sorted_inverted_index['spam']), sum(sorted_inverted_index['spam'].values()), smoothning_flag)
+        ConditionalProbability.calc_probability(sorted_inverted_index, smoothning_flag)
