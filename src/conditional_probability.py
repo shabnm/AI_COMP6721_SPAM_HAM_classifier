@@ -1,30 +1,25 @@
 class ConditionalProbability:
 
     @staticmethod
-    def calc_probability(sorted_inverted_index, smoothning_flag):
+    def calc_probability(sorted_inverted_index, smoothing_flag):
+        k_vocab = {}
+        k_count = {}
+        for k in sorted_inverted_index.keys():
+            k_vocab[k] = len(sorted_inverted_index[k])
+            k_count[k] = sum(sorted_inverted_index[k].values())
 
-        ham_vocab = len(sorted_inverted_index['ham'])
-        ham_count = sum(sorted_inverted_index['ham'].values())
-        spam_vocab = len(sorted_inverted_index['spam'])
-        spam_count = sum(sorted_inverted_index['spam'].values())
+        delta = 0.5 if smoothing_flag else 0
 
-        delta = 0
-        if smoothning_flag is True:
-            delta = 0.5
-
-        line_num = 1
-        with open('../model.txt', "w") as f:
-            for word in sorted_inverted_index['ham'].keys():
-                ham_num = sorted_inverted_index['ham'][word] + delta
-                ham_den = ham_count + (delta * ham_vocab)
-
-                spam_num = sorted_inverted_index['spam'][word] + delta
-                spam_den = spam_count + (delta * spam_vocab)
-
-                ham_prob = ham_num / ham_den
-                spam_prob = spam_num / spam_den
-
-                # def write_to_model(self, i, word, ham_word_count, ham_probability, spam_word_count, spam_probability):
-                print("{}  {}  {}  {}  {}  {}".format(line_num, word, sorted_inverted_index['ham'][word], ham_prob, sorted_inverted_index['spam'][word], spam_prob), file=f)
-
-                line_num += 1
+        line_num = 0
+        outputs = []
+        for word in sorted_inverted_index[list(sorted_inverted_index.keys())[0]].keys():
+            line_num += 1
+            output = [str(line_num), word]
+            for k in sorted_inverted_index.keys():
+                num = sorted_inverted_index[k][word] + delta
+                den = k_count[k] + (delta * k_vocab[k])
+                prob = num / den
+                output.append(str(sorted_inverted_index[k][word]))
+                output.append(str(prob))
+            outputs.append(output)
+        return outputs
