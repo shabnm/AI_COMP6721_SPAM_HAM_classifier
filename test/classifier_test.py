@@ -10,7 +10,7 @@ class ClassifierTest(unittest.TestCase):
         super().__init__(methodName)
 
         self.full_data_dir = os.path.dirname(os.path.abspath(__file__)) + "/../data/"
-        self.short_data_dir = os.path.dirname(os.path.abspath(__file__)) + "/../data_tiny/"
+        # self.short_data_dir = os.path.dirname(os.path.abspath(__file__)) + "/../data_tiny/"
 
     def setUp(self) -> None:
         super().setUp()
@@ -21,8 +21,8 @@ class ClassifierTest(unittest.TestCase):
     def test_pipeline_on_full_data(self):
         self.run_pipeline(self.full_data_dir)
 
-    def test_pipeline_on_short_data(self):
-        self.run_pipeline(self.short_data_dir)
+    # def test_pipeline_on_short_data(self):
+    #     self.run_pipeline(self.short_data_dir)
 
     def run_pipeline(self, datadir):
         model = NaiveBayesModel()

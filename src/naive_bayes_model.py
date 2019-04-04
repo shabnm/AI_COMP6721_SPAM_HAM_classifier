@@ -46,12 +46,11 @@ class NaiveBayesModel:
                                 self.inverted_index[k][word] = 0
                         self.inverted_index[msg_type][word] += 1
 
+        self.vocabulary = sorted(self.vocabulary)
+
         sorted_inverted_index = {}
         for k in self.labels:
             sorted_inverted_index[k] = dict(sorted(self.inverted_index[k].items()))
-
-        self.vocabulary = sorted(self.vocabulary)
-
         self.inverted_index = sorted_inverted_index
 
     def calc_probability(self, smoothing=0):
