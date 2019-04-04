@@ -2,16 +2,17 @@ import os
 
 
 class DataProvider:
-    def __init__(self, labels=None) -> None:
+    def __init__(self, dir, source='train', labels=None) -> None:
         if labels is None:
             labels = ['ham', 'spam']
         self.labels = labels
+        self.source = source
+        self.dir = dir
 
-    def get_files(self, source='train'):
-        data_dir = os.path.dirname(os.path.abspath(__file__)) + "/../data/"
-
-        train_files = os.listdir(data_dir + "{}/".format(source))
+    def get_files(self):
+        files_in_dir = os.listdir(self.dir + "{}/".format(self.source))
+        files_in_dir = sorted(files_in_dir)
         files = {}
         for k in self.labels:
-            files[k] = [data_dir + '{}/{}'.format(source, f) for f in train_files if '-{}-'.format(k) in f]
+            files[k] = [self.dir + '{}/{}'.format(self.source, f) for f in files_in_dir if '-{}-'.format(k) in f]
         return files
