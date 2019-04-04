@@ -25,9 +25,12 @@ class ClassifierTest(unittest.TestCase):
     #     self.run_pipeline(self.short_data_dir)
 
     def run_pipeline(self, datadir):
+
+        ##############################################################
+
         model = NaiveBayesModel()
         model.create_inverted_index(DataProvider(datadir, source='train'))
-        model.calc_probability(True)
+        model.calc_probability()
         model.save_model_to_file(datadir + '/out/model.txt')
         results, cm = model.inference(DataProvider(datadir, source='test'))
         print('test_1_simple')
@@ -40,7 +43,7 @@ class ClassifierTest(unittest.TestCase):
             stop_words = [l.strip() for l in f.readlines()]
         model = NaiveBayesModel(stop_words=stop_words)
         model.create_inverted_index(DataProvider(datadir, source='train'))
-        model.calc_probability(True)
+        model.calc_probability()
         model.save_model_to_file(datadir + '/out/stopword-model.txt')
         results, cm = model.inference(DataProvider(datadir, source='test'))
         print('test_2_stop_words')
@@ -49,11 +52,24 @@ class ClassifierTest(unittest.TestCase):
 
         ##############################################################
 
-        model = NaiveBayesModel(remove_this_or_shorter=2, remove_this_or_longer=9)
+        model = NaiveBayesModel(min_len_filter=2, max_len_filter=9)
         model.create_inverted_index(DataProvider(datadir, source='train'))
-        model.calc_probability(True)
+        model.calc_probability()
         model.save_model_to_file(datadir + '/out/wordlength-model.txt')
         results, cm = model.inference(DataProvider(datadir, source='test'))
         print('test_3_length')
         print(cm)
         model.save_results_to_file(results, datadir + '/out/wordlength-result.txt')
+
+        ##############################################################
+
+        for f in [1, 5, 10, 15, 20]:
+            model = NaiveBayesModel(cutoff_frequency=f)
+            model.create_inverted_index(DataProvider(datadir, source='train'))
+            model.calc_probability()
+            # model.save_model_to_file(datadir + '/out/wordlength-model.txt')
+            results, cm = model.inference(DataProvider(datadir, source='test'))
+            print('test_4_frequency_{}'.format(f))
+            print(cm)
+            # model.save_results_to_file(results, datadir + '/out/wordlength-result.txt')
+
