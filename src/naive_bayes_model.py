@@ -7,7 +7,7 @@ import numpy as np
 
 class NaiveBayesModel:
 
-    def __init__(self, stop_words=None, min_len_filter=0, max_len_filter=math.inf, cutoff_frequency=0) -> None:
+    def __init__(self, stop_words=None, smoothing=0, min_len_filter=0, max_len_filter=math.inf, cutoff_frequency=0) -> None:
         self.inverted_index = {}
         self.frequencies = {}
         self.cutoff_frequency = cutoff_frequency
@@ -17,14 +17,16 @@ class NaiveBayesModel:
         self.prior_prob = {}
         self.min_len_filter = min_len_filter
         self.max_len_filter = max_len_filter
+        self.smoothing = smoothing
 
         self.stop_words = stop_words if stop_words is not None else []
 
     def text_processor(self, text):
-        clean_text = [word for word in re.split("[^a-zA-Z]+", text.lower()) if word is not None and
-                      word != '' and
-                      word not in self.stop_words and
-                      self.min_len_filter < len(word) < self.max_len_filter
+        clean_text = [word for word in re.split("[^a-zA-Z]+", text.lower())
+                      if True
+                      and word is not None
+                      and word != ''
+                      and self.min_len_filter < len(word) < self.max_len_filter
                       ]
         return clean_text
 
@@ -47,7 +49,7 @@ class NaiveBayesModel:
             doc_words_count = dict(zip(unique, counts))
 
             self.vocabulary += list(unique)
-            self.vocabulary = list(set(self.vocabulary))
+            self.vocabulary = list(set(self.vocabulary) - set(self.stop_words))
 
             for word, freq in doc_words_count.items():
                 if word not in self.inverted_index[msg_type]:
@@ -69,7 +71,7 @@ class NaiveBayesModel:
             sorted_inverted_index[k] = {w: self.inverted_index[k][w] for w in self.vocabulary}
         self.inverted_index = sorted_inverted_index
 
-    def calc_probability(self, smoothing=0):
+    def calc_probability(self):
         k_vocab = {}
         k_count = {}
         for k in self.labels:
@@ -79,7 +81,7 @@ class NaiveBayesModel:
 
         for word in self.vocabulary:
             for k in self.labels:
-                self.k_prob[k][word] = (self.inverted_index[k][word] + smoothing) / (k_count[k] + (smoothing * k_vocab[k]))
+                self.k_prob[k][word] = (self.inverted_index[k][word] + self.smoothing) / (k_count[k] + (self.smoothing * k_vocab[k]))
 
     def save_model_to_file(self, file_name):
         line_num = 0
@@ -95,7 +97,7 @@ class NaiveBayesModel:
         with open(file_name, "w") as f:
             print("\n".join(['  '.join([str(item) for item in row]) for row in outputs]), file=f)
 
-    def inference(self, provider, smoothing=0):
+    def inference(self, provider):
         line_num = 0
         results = []
         files = provider.get_files()
@@ -112,7 +114,7 @@ class NaiveBayesModel:
                 unique, counts = numpy.unique(clean_words, return_counts=True)
                 doc_words_count = dict(zip(unique, counts))
 
-                result_label, probs = self.classify(doc_words_count, smoothing)
+                result_label, probs = self.classify(doc_words_count)
                 results.append([
                     line_num,
                     os.path.split(file)[1],
@@ -129,13 +131,13 @@ class NaiveBayesModel:
         cm = self.confusion_matrix(true_classes, predicted_classes, self.labels)
         return results, cm
 
-    def classify(self, word_count, smoothing=0):
+    def classify(self, word_count):
         resulting_probabilities = {}
         for label in self.labels:
             resulting_probabilities[label] = math.log(self.prior_prob[label] / sum(self.prior_prob.values()))
             for word in word_count.keys():
                 if word in self.k_prob[label] and self.k_prob[label][word] > 0:
-                    resulting_probabilities[label] += math.log(self.k_prob[label][word])
+                    resulting_probabilities[label] += math.log10(self.k_prob[label][word])
         argmax_label = self.labels[0]
         for label in self.labels:
             if resulting_probabilities[label] > resulting_probabilities[argmax_label]:
