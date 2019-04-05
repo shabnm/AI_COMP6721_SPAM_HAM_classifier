@@ -22,13 +22,8 @@ class NaiveBayesModel:
         self.stop_words = stop_words if stop_words is not None else []
 
     def text_processor(self, text):
-        clean_text = [word for word in re.split("[^a-zA-Z]+", text.lower())
-                      if True
-                      and word is not None
-                      and word != ''
-                      and self.min_len_filter < len(word) < self.max_len_filter
-                      ]
-        return clean_text
+        return [word for word in re.split("[^a-zA-Z]+", text)
+                if self.min_len_filter < len(word) < self.max_len_filter]
 
     def create_inverted_index(self, data_provider):
         self.labels = data_provider.labels[:]
@@ -40,13 +35,17 @@ class NaiveBayesModel:
 
         for msg_type in self.labels:
             clean_words = []
+            texts = []
             for filename in files[msg_type]:
                 self.prior_prob[msg_type] += 1
                 with open(filename, 'r', encoding='latin-1') as f:
-                    clean_words += self.text_processor(f.read())
+                    texts.append(f.read().lower())
+            clean_words += self.text_processor(''.join(texts))
 
-            unique, counts = numpy.unique(clean_words, return_counts=True)
-            doc_words_count = dict(zip(unique, counts))
+            unique = set(clean_words)
+            doc_words_count = {w: 0 for w in unique}
+            for w in clean_words:
+                doc_words_count[w] += 1
 
             self.vocabulary += list(unique)
             self.vocabulary = list(set(self.vocabulary) - set(self.stop_words))
@@ -109,7 +108,7 @@ class NaiveBayesModel:
             for file in files[label]:
                 line_num += 1
                 with open(file, encoding='latin-1', mode='r') as f:
-                    clean_words = self.text_processor(f.read())
+                    clean_words = self.text_processor(f.read().lower())
 
                 unique, counts = numpy.unique(clean_words, return_counts=True)
                 doc_words_count = dict(zip(unique, counts))

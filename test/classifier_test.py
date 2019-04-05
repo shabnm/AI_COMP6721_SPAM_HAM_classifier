@@ -66,11 +66,11 @@ class ClassifierTest(unittest.TestCase):
             model = NaiveBayesModel(smoothing=0.5, cutoff_frequency=f)
             model.create_inverted_index(DataProvider(datadir, source='train'))
             model.calc_probability()
-            model.save_model_to_file(datadir + '/out/wordlength_{}-model.txt'.format(f))
+            model.save_model_to_file(datadir + '/out/wordlowfreq_{}-model.txt'.format(f))
             results, cm = model.inference(DataProvider(datadir, source='test'))
             print('test_4_frequency_{}'.format(f))
             print(cm)
-            model.save_results_to_file(results, datadir + '/out/wordlength_{}-result.txt'.format(f))
+            model.save_results_to_file(results, datadir + '/out/wordlowfreq_{}-result.txt'.format(f))
 
         ##############################################################
 
