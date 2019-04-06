@@ -1,16 +1,22 @@
 import os
 import re
 import math
-import numpy
-import numpy as np
 
 
 class NaiveBayesModel:
 
-    def __init__(self, stop_words=None, smoothing=0, min_len_filter=0, max_len_filter=math.inf, cutoff_frequency=0) -> None:
+    def __init__(self,
+                 stop_words=None,
+                 smoothing=0,
+                 min_len_filter=0,
+                 max_len_filter=math.inf,
+                 cutoff_low_count=0,
+                 cutoff_top_frequent_words_fraction=0.0
+                 ) -> None:
         self.inverted_index = {}
         self.frequencies = {}
-        self.cutoff_frequency = cutoff_frequency
+        self.cutoff_low_count = cutoff_low_count
+        self.cutoff_top_frequent_words_fraction = cutoff_top_frequent_words_fraction
         self.labels = []
         self.vocabulary = []
         self.k_prob = {}
@@ -58,7 +64,12 @@ class NaiveBayesModel:
                 self.inverted_index[msg_type][word] += freq
                 self.frequencies[word] += freq
 
-        words_to_remove = [w for w, f in self.frequencies.items() if f <= self.cutoff_frequency]
+        words_to_remove = [w for w, f in self.frequencies.items() if f <= self.cutoff_low_count]
+
+        if self.cutoff_top_frequent_words_fraction < 100 or True:
+            sorted_freq = sorted(self.frequencies.items(), key=lambda kv: -kv[1])
+            fraction_to_remove = [k for k, v in sorted_freq[0:int(len(self.frequencies) * self.cutoff_top_frequent_words_fraction)]]
+            words_to_remove += fraction_to_remove
 
         self.vocabulary = list(set(self.vocabulary) - set(words_to_remove))
         for w in words_to_remove:
@@ -78,9 +89,10 @@ class NaiveBayesModel:
             k_count[k] = sum(self.inverted_index[k].values())
             self.k_prob[k] = {w: 0 for w in self.vocabulary}
 
-        for word in self.vocabulary:
-            for k in self.labels:
-                self.k_prob[k][word] = (self.inverted_index[k][word] + self.smoothing) / (k_count[k] + (self.smoothing * k_vocab[k]))
+        for k in self.labels:
+            divide_by = k_count[k] + self.smoothing * k_vocab[k]
+            for word in self.vocabulary:
+                self.k_prob[k][word] = (self.inverted_index[k][word] + self.smoothing) / divide_by
 
     def save_model_to_file(self, file_name):
         line_num = 0
@@ -110,8 +122,10 @@ class NaiveBayesModel:
                 with open(file, encoding='latin-1', mode='r') as f:
                     clean_words = self.text_processor(f.read().lower())
 
-                unique, counts = numpy.unique(clean_words, return_counts=True)
-                doc_words_count = dict(zip(unique, counts))
+                unique = set(clean_words)
+                doc_words_count = {w: 0 for w in unique}
+                for w in clean_words:
+                    doc_words_count[w] += 1
 
                 result_label, probs = self.classify(doc_words_count)
                 results.append([
@@ -150,7 +164,22 @@ class NaiveBayesModel:
 
     @staticmethod
     def confusion_matrix(true_classes, predicted_classes, labels):
-        cm = np.zeros((len(labels), len(labels)))
+        cm = {'TP': 0, 'TN': 0, 'FP': 0, 'FN': 0}
         for yt, yp in zip(true_classes, predicted_classes):
-            cm[labels.index(yt), labels.index(yp)] += 1
-        return cm
+            if labels.index(yt) == labels.index(yp):
+                if labels.index(yp) == 0:
+                    cm['TP'] += 1
+                else:
+                    cm['TN'] += 1
+            else:
+                if labels.index(yp) == 0:
+                    cm['FP'] += 1
+                else:
+                    cm['FN'] += 1
+        result = dict(cm)
+        print(cm)
+        result['Accuracy'] = (cm['TP'] + cm['TN']) / sum(cm.values())
+        result['Precision'] = cm['TP'] / (cm['TP'] + cm['FP']) if (cm['TP'] + cm['FP']) != 0 else 1
+        result['Recall'] = cm['TP'] / (cm['TP'] + cm['FN']) if (cm['TP'] + cm['FN']) != 0 else 1
+        result['F1'] = 2 * (result['Recall'] * result['Precision']) / (result['Recall'] + result['Precision']) if (result['Recall'] + result['Precision']) != 0 else 0
+        return result
