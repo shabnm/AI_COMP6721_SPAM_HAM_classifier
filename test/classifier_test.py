@@ -1,7 +1,7 @@
 import os
+import unittest
 
 from src.data_provider import DataProvider
-import unittest
 from src.naive_bayes_model import NaiveBayesModel
 
 
