@@ -46,7 +46,7 @@ class NaiveBayesModel:
                 self.prior_prob[msg_type] += 1
                 with open(filename, 'r', encoding='latin-1') as f:
                     texts.append(f.read().lower())
-            clean_words += self.text_processor(''.join(texts))
+            clean_words += self.text_processor(' '.join(texts))
 
             unique = set(clean_words)
             doc_words_count = {w: 0 for w in unique}
@@ -66,7 +66,7 @@ class NaiveBayesModel:
 
         words_to_remove = [w for w, f in self.frequencies.items() if f <= self.cutoff_low_count]
 
-        if self.cutoff_top_frequent_words_fraction < 100 or True:
+        if self.cutoff_top_frequent_words_fraction < 100:
             sorted_freq = sorted(self.frequencies.items(), key=lambda kv: -kv[1])
             fraction_to_remove = [k for k, v in sorted_freq[0:int(len(self.frequencies) * self.cutoff_top_frequent_words_fraction)]]
             words_to_remove += fraction_to_remove
@@ -164,22 +164,22 @@ class NaiveBayesModel:
 
     @staticmethod
     def confusion_matrix(true_classes, predicted_classes, labels):
-        cm = {'TP': 0, 'TN': 0, 'FP': 0, 'FN': 0}
-        for yt, yp in zip(true_classes, predicted_classes):
-            if labels.index(yt) == labels.index(yp):
-                if labels.index(yp) == 0:
-                    cm['TP'] += 1
-                else:
-                    cm['TN'] += 1
-            else:
-                if labels.index(yp) == 0:
-                    cm['FP'] += 1
-                else:
-                    cm['FN'] += 1
-        result = dict(cm)
-        print(cm)
-        result['Accuracy'] = (cm['TP'] + cm['TN']) / sum(cm.values())
-        result['Precision'] = cm['TP'] / (cm['TP'] + cm['FP']) if (cm['TP'] + cm['FP']) != 0 else 1
-        result['Recall'] = cm['TP'] / (cm['TP'] + cm['FN']) if (cm['TP'] + cm['FN']) != 0 else 1
-        result['F1'] = 2 * (result['Recall'] * result['Precision']) / (result['Recall'] + result['Precision']) if (result['Recall'] + result['Precision']) != 0 else 0
-        return result
+        cms = {}
+        for label in labels:
+            cms[label] = {'TP': 0, 'TN': 0, 'FP': 0, 'FN': 0}
+            for y_true, y_predicted in zip(true_classes, predicted_classes):
+                if label == y_true == y_predicted:
+                    cms[label]['TP'] += 1
+                if label == y_true != y_predicted:
+                    cms[label]['FN'] += 1
+                if label != y_true == y_predicted:
+                    cms[label]['TN'] += 1
+                if label != y_true != y_predicted:
+                    cms[label]['FP'] += 1
+            result = dict(cms[label])
+            result['Accuracy'] = (cms[label]['TP'] + cms[label]['TN']) / sum(cms[label].values())
+            result['Precision'] = cms[label]['TP'] / (cms[label]['TP'] + cms[label]['FP']) if (cms[label]['TP'] + cms[label]['FP']) != 0 else 1
+            result['Recall'] = cms[label]['TP'] / (cms[label]['TP'] + cms[label]['FN']) if (cms[label]['TP'] + cms[label]['FN']) != 0 else 1
+            result['F1'] = 2 * (result['Recall'] * result['Precision']) / (result['Recall'] + result['Precision']) if (result['Recall'] + result['Precision']) != 0 else 0
+            cms[label] = result
+        return cms
